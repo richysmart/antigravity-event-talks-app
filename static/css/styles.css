@@ -376,6 +376,83 @@ body {
     gap: 24px;
 }
 
+/* Theme Toggle Slider */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    border-radius: 20px;
+    height: 38px;
+}
+
+.theme-switch-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="light"] .slider {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-secondary);
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input:checked + .slider {
+    background-color: var(--accent-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+    background-color: #ffffff;
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
 .header-titles h2 {
     font-family: var(--font-heading);
     font-size: 1.8rem;
@@ -739,6 +816,37 @@ body {
 }
 
 .btn-card-link svg {
+    width: 14px;
+    height: 14px;
+}
+
+.card-actions-right {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-copy-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--border-color);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-copy-action:hover {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--color-fixed);
+}
+
+.btn-copy-action svg {
     width: 14px;
     height: 14px;
 }

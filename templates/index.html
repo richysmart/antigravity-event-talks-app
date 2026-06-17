@@ -73,19 +73,6 @@
                     </div>
                 </div>
             </nav>
-
-            <div class="sidebar-footer">
-                <button id="theme-toggle" class="btn btn-secondary" aria-label="Toggle light/dark theme">
-                    <svg class="sun-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <svg class="moon-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span id="theme-text">Light Mode</span>
-                </button>
-            </div>
         </aside>
 
         <!-- Main Content Area -->
@@ -96,9 +83,22 @@
                     <p>Stay updated with the latest features, enhancements, deprecations, and fixes in Google BigQuery.</p>
                 </div>
                 <div class="header-actions">
+                    <div class="theme-switch-wrapper">
+                        <span class="theme-switch-label" id="theme-status-label">Dark Mode</span>
+                        <label class="theme-switch" for="theme-slider-check">
+                            <input type="checkbox" id="theme-slider-check" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <button id="export-csv-btn" class="btn btn-secondary" title="Export current release notes to CSV">
+                        <svg class="export-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;vertical-align:middle;margin-right:2px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        <span>Export CSV</span>
+                    </button>
                     <button id="refresh-btn" class="btn btn-primary">
                         <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 11-.57-8.38l6.07-5.19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l6.07-5.19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         <span>Refresh Feed</span>
                     </button>

@@ -30,8 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const countAll = document.getElementById('count-all');
 
     // Theme Toggle
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    const themeText = document.getElementById('theme-text');
+    const themeSliderCheck = document.getElementById('theme-slider-check');
+    const themeStatusLabel = document.getElementById('theme-status-label');
+
+    // Export CSV
+    const exportCsvBtn = document.getElementById('export-csv-btn');
 
     // Tweet Composer
     const tweetSidebar = document.getElementById('tweet-sidebar');
@@ -52,11 +55,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Sync slider state on load
+    if (savedTheme === 'dark') {
+        themeSliderCheck.checked = true;
+    } else {
+        themeSliderCheck.checked = false;
+    }
     updateThemeUI(savedTheme);
 
-    themeToggleBtn.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    themeSliderCheck.addEventListener('change', () => {
+        const newTheme = themeSliderCheck.checked ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         updateThemeUI(newTheme);
@@ -65,9 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateThemeUI(theme) {
         if (theme === 'dark') {
-            themeText.textContent = 'Light Mode';
+            themeStatusLabel.textContent = 'Dark Mode';
         } else {
-            themeText.textContent = 'Dark Mode';
+            themeStatusLabel.textContent = 'Light Mode';
         }
     }
 
@@ -241,12 +250,21 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
                                 </svg>
                             </a>
-                            <button class="btn-tweet-action" aria-label="Tweet about this update">
-                                <svg viewBox="0 0 24 24">
-                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                                </svg>
-                                <span>Draft Post</span>
-                            </button>
+                            <div class="card-actions-right">
+                                <button class="btn-copy-action" aria-label="Copy release note to clipboard">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <span>Copy</span>
+                                </button>
+                                <button class="btn-tweet-action" aria-label="Tweet about this update">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    </svg>
+                                    <span>Draft Post</span>
+                                </button>
+                            </div>
                         </div>
                     </article>
                 `;
@@ -268,6 +286,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 tweetActionBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     selectNoteAndOpenComposer(note);
+                });
+
+                // Copy button click listener
+                const copyActionBtn = card.querySelector('.btn-copy-action');
+                copyActionBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    copyNoteToClipboard(note);
                 });
             });
         }
@@ -464,6 +489,94 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(twitterUrl, '_blank', 'width=550,height=420');
         showToast('Opened X / Twitter sharing tab', 'success');
     });
+
+    // Export CSV click trigger
+    exportCsvBtn.addEventListener('click', () => {
+        exportNotesToCSV();
+    });
+
+    // ==========================================================================
+    // Core Utilities: Copy and Export
+    // ==========================================================================
+    function copyNoteToClipboard(note) {
+        // Strip HTML tag helper
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = note.content;
+        const plainContent = (tempDiv.textContent || tempDiv.innerText || '').trim();
+        
+        const textToCopy = `[BigQuery Release Note - ${note.category}]\nTitle: ${note.title}\nDate: ${formatDate(note.updated)}\n\n${plainContent}\n\nLink: ${note.link || 'https://cloud.google.com/bigquery/docs/release-notes'}`;
+        
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast('Copied release note text to clipboard!', 'success');
+        }).catch(err => {
+            console.error('Could not copy text: ', err);
+            showToast('Failed to copy to clipboard', 'error');
+        });
+    }
+
+    function exportNotesToCSV() {
+        // We export the currently filtered release notes
+        const filtered = releaseNotes.filter(note => {
+            const matchesCategory = activeCategory === 'all' || note.category.toLowerCase() === activeCategory;
+            const rawTitleMatch = note.title.toLowerCase().includes(searchQuery);
+            const contentMatch = note.content.toLowerCase().includes(searchQuery);
+            const matchesSearch = searchQuery === '' || rawTitleMatch || contentMatch;
+            return matchesCategory && matchesSearch;
+        });
+
+        if (filtered.length === 0) {
+            showToast('No release notes to export', 'error');
+            return;
+        }
+
+        // CSV Header
+        const headers = ['ID', 'Category', 'Title', 'Date', 'Link', 'Content'];
+        
+        // CSV Rows
+        const rows = filtered.map(note => {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = note.content;
+            const plainContent = (tempDiv.textContent || tempDiv.innerText || '').trim().replace(/"/g, '""'); // escape double quotes
+            
+            return [
+                `"${note.id.replace(/"/g, '""')}"`,
+                `"${note.category.replace(/"/g, '""')}"`,
+                `"${note.title.replace(/"/g, '""')}"`,
+                `"${formatDate(note.updated)}"`,
+                `"${(note.link || '').replace(/"/g, '""')}"`,
+                `"${plainContent}"`
+            ];
+        });
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(r => r.join(','))
+        ].join('\n');
+
+        // Create Blob and download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        // Generate filename based on category and search query
+        let filename = 'bigquery_release_notes';
+        if (activeCategory !== 'all') {
+            filename += `_${activeCategory.toLowerCase()}`;
+        }
+        if (searchQuery) {
+            filename += `_search_${searchQuery.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`;
+        }
+        filename += `_${new Date().toISOString().slice(0,10)}.csv`;
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast(`Exported ${filtered.length} updates to CSV!`, 'success');
+    }
 
     // ==========================================================================
     // Toast Notification Utility
