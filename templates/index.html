@@ -71,6 +71,15 @@
                         <span class="stat-label">Status</span>
                         <span class="stat-val status-badge" id="feed-status">Pending</span>
                     </div>
+                    <div class="stat-item cache-progress-item" id="cache-progress-container" style="display: none;">
+                        <span class="stat-label" style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 4px;">
+                            <span>Cache Life</span>
+                            <span id="cache-time-left" style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;">5:00</span>
+                        </span>
+                        <div class="cache-bar-container">
+                            <div class="cache-bar" id="cache-life-bar"></div>
+                        </div>
+                    </div>
                 </div>
             </nav>
         </aside>

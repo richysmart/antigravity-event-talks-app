@@ -132,6 +132,7 @@ def get_release_notes():
             "success": True,
             "status": status,
             "last_updated": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(cache["last_fetched"])),
+            "last_fetched_epoch": cache["last_fetched"],
             "count": len(entries),
             "data": entries
         })

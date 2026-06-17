@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedNoteId = null;
     let activeCategory = 'all';
     let searchQuery = '';
+    let lastFetchedEpoch = 0;
+    let cacheTimerInterval = null;
 
     // ==========================================================================
     // DOM Elements
@@ -28,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastCheckedTime = document.getElementById('last-checked-time');
     const feedStatus = document.getElementById('feed-status');
     const countAll = document.getElementById('count-all');
+    const cacheProgressContainer = document.getElementById('cache-progress-container');
+    const cacheTimeLeft = document.getElementById('cache-time-left');
+    const cacheLifeBar = document.getElementById('cache-life-bar');
 
     // Theme Toggle
     const themeSliderCheck = document.getElementById('theme-slider-check');
@@ -102,6 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Update UI metadata
                 lastCheckedTime.textContent = result.last_updated;
+                lastFetchedEpoch = result.last_fetched_epoch;
+                
+                // Start Cache Life Progress Countdown
+                startCacheCountdown();
                 
                 // Update feed status badge style
                 feedStatus.textContent = result.status;
@@ -576,6 +585,53 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(link);
         
         showToast(`Exported ${filtered.length} updates to CSV!`, 'success');
+    }
+
+    // ==========================================================================
+    // Cache Progress Bar Logic
+    // ==========================================================================
+    function startCacheCountdown() {
+        if (cacheTimerInterval) {
+            clearInterval(cacheTimerInterval);
+        }
+        
+        cacheProgressContainer.style.display = 'flex';
+        updateCacheProgress();
+        cacheTimerInterval = setInterval(updateCacheProgress, 1000);
+    }
+
+    function updateCacheProgress() {
+        if (!lastFetchedEpoch) return;
+        
+        const currentEpoch = Date.now() / 1000;
+        const elapsed = currentEpoch - lastFetchedEpoch;
+        const cacheLimit = 300; // 5 minutes cache
+        const remaining = Math.max(0, cacheLimit - elapsed);
+        
+        const minutes = Math.floor(remaining / 60);
+        const seconds = Math.floor(remaining % 60);
+        const secondsStr = seconds < 10 ? '0' + seconds : seconds;
+        
+        cacheTimeLeft.textContent = `${minutes}:${secondsStr}`;
+        
+        const percent = (remaining / cacheLimit) * 100;
+        cacheLifeBar.style.width = `${percent}%`;
+        
+        cacheLifeBar.className = 'cache-bar';
+        if (percent > 50) {
+            cacheLifeBar.classList.add('fresh');
+        } else if (percent > 10) {
+            cacheLifeBar.classList.add('stale');
+        } else {
+            cacheLifeBar.classList.add('expired');
+        }
+        
+        if (remaining <= 0) {
+            clearInterval(cacheTimerInterval);
+            feedStatus.textContent = 'Expired';
+            feedStatus.className = 'stat-val status-badge error';
+            cacheTimeLeft.textContent = '0:00';
+        }
     }
 
     // ==========================================================================
